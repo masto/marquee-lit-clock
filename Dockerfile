@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build the time database
-FROM python:3-alpine
+FROM python:3-alpine AS convert
 
 WORKDIR /data
 
@@ -14,7 +14,7 @@ RUN mkdir times
 RUN python3 convert.py
 
 # Build the production image
-FROM python:3-alpine
+FROM python:3-alpine AS clock
 
 WORKDIR /app
 
@@ -22,6 +22,6 @@ COPY requirements.txt ./
 RUN pip3 install -r requirements.txt
 
 COPY clock.py lookup.py word_clock.py ./
-COPY times/ ./times/
+COPY --from=convert /data/times/ ./times/
 
 ENTRYPOINT ["python3", "clock.py"]
